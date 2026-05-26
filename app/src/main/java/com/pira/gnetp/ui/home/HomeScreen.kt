@@ -5,6 +5,8 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,11 +15,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -32,6 +36,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
 
 private val DarkBg = Color(0xFF121212)
 private val CardBg = Color(0xFF1E1E1E)
@@ -58,6 +63,26 @@ fun HomeScreen(
     
     var showInfoDialog by remember { mutableStateOf(false) }
 
+    // إعدادات الأنيميشن للزر النابض
+    val infiniteTransition = rememberInfiniteTransition()
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+    // مؤقت تبديل النص والأيقونة كل ثانيتين
+    var showIcon by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        while(true) {
+            delay(2000)
+            showIcon = !showIcon
+        }
+    }
+
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(modifier = Modifier.fillMaxSize().background(DarkBg)) {
             Column(
@@ -73,13 +98,44 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.size(48.dp))
+                    // الزر النابض (مكان الدائرة الخضراء بالصورة)
+                    Box(
+                        modifier = Modifier
+                            .scale(pulseScale)
+                            .clickable {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/exhxx78"))
+                                context.startActivity(intent)
+                            }
+                            .background(CardBg, RoundedCornerShape(12.dp))
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Crossfade(targetState = showIcon, animationSpec = tween(500)) { isIcon ->
+                            if (isIcon) {
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "قناتنا",
+                                    tint = PrimaryTeal,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            } else {
+                                Text(
+                                    text = "قناتنا",
+                                    color = PrimaryTeal,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+
                     Text(
                         text = "بث الإنترنت (VPN)",
                         color = Color.White,
-                        fontSize = 24.sp,
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
+
                     IconButton(onClick = { showInfoDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Info,
@@ -201,7 +257,6 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(90.dp))
             }
 
-            // نافذة التعليمات وشرح النافذة العائمة
             if (showInfoDialog) {
                 Dialog(
                     onDismissRequest = { showInfoDialog = false },
@@ -229,7 +284,6 @@ fun HomeScreen(
                             
                             Spacer(modifier = Modifier.height(20.dp))
                             
-                            // شرح ميزة النافذة العائمة للمستخدم
                             Text(text = "🌟 ميزة البث المستمر:", color = PrimaryTeal, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                             Text(text = "لضمان بقاء البث نشطاً، لا تغلق التطبيق بالكامل. فقط اضغط على زر (الرئيسية / Home) في هاتفك.", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp))
                             Text(text = "سيتحول التطبيق تلقائياً إلى نافذة مربعة عائمة (مثل فيديو اليوتيوب). يمكنك سحبها وإخفائها في حافة الشاشة لتصفح جهازك براحة تامة!", color = TextGray, fontSize = 13.sp, modifier = Modifier.padding(bottom = 16.dp))
@@ -246,7 +300,6 @@ fun HomeScreen(
                             Divider(color = Color.DarkGray, thickness = 1.dp)
                             Spacer(modifier = Modifier.height(16.dp))
                             
-                            // حقوق المطور
                             Text(text = "المطور: Developer Mohamed Adnan (@m_7004)", color = PrimaryTeal, fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
                             Text(text = "الإصدار: 1.0.0 (الإصدار الأول)", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 20.dp))
                             
