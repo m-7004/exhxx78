@@ -15,7 +15,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.pira.gnetp"
+        applicationId = "com.exhxx.exhxx78"
         minSdk = 23
         targetSdk = 36
         versionCode = 5
