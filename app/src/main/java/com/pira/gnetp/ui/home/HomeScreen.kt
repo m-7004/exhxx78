@@ -1,11 +1,9 @@
 package com.pira.gnetp.ui.home
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
@@ -41,7 +39,6 @@ private val CardBg = Color(0xFF1E1E1E)
 private val PrimaryTeal = Color(0xFF00BFA5)
 private val TextGray = Color(0xFFAAAAAA)
 
-@SuppressLint("MissingPermission")
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
@@ -59,39 +56,19 @@ fun HomeScreen(
     val clipboardManager = LocalClipboardManager.current
     
     val isRunning = uiState.isHttpProxyActive || uiState.isSocks5ProxyActive
-    
-    // مشغل الصلاحيات المتعددة للهوتسبوت المباشر
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val granted = permissions.entries.all { it.value }
-        if (granted) {
-            // التحقق من تشغيل الـ GPS فعلياً في الجهاز
-            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
-            if (!locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
-                Toast.makeText(context, "الرجاء تشغيل الـ GPS (الموقع) من الستارة العلوية أولاً!", Toast.LENGTH_LONG).show()
-                return@rememberLauncherForActivityResult
-            }
-            
-            try {
-                val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    wifiManager.startLocalOnlyHotspot(object : WifiManager.LocalOnlyHotspotCallback() {
-                        override fun onStarted(reservation: WifiManager.LocalOnlyHotspotReservation?) {
-                            super.onStarted(reservation)
-                            Toast.makeText(context, "تم تشغيل نقطة الاتصال المباشرة بنجاح!", Toast.LENGTH_SHORT).show()
-                        }
-                        override fun onFailed(reason: Int) {
-                            super.onFailed(reason)
-                            Toast.makeText(context, "فشل التشغيل المباشر، استخدم زر الإعدادات.", Toast.LENGTH_LONG).show()
-                        }
-                    }, null)
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "حدث خطأ بالصلاحيات، استخدم زر الإعدادات", Toast.LENGTH_SHORT).show()
-            }
-        } else {
-            Toast.makeText(context, "يجب إعطاء جميع الصلاحيات ليعمل الزر المباشر", Toast.LENGTH_LONG).show()
+
+    // طلب صلاحية الإشعارات إجبارياً للأندرويد 13+ لضمان بقاء التطبيق بالخلفية
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (!isGranted) {
+            Toast.makeText(context, "يجب تفعيل الإشعارات لضمان عدم انقطاع البث بالخلفية!", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
@@ -113,7 +90,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
             )
 
-            // زر حماية التطبيق من الإغلاق
+            // زر الحماية من إغلاق البطارية
             Button(
                 onClick = {
                     val intent = Intent()
@@ -123,17 +100,17 @@ fun HomeScreen(
                         intent.data = Uri.parse("package:${context.packageName}")
                         context.startActivity(intent)
                     } else {
-                        Toast.makeText(context, "التطبيق محمي بالفعل من الإغلاق بالخلفية ✅", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "التطبيق محمي من الإغلاق المؤقت ✅", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).height(45.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("🛡️ حماية البث من الإغلاق بالخلفية", color = PrimaryTeal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text("🛡️ تفعيل الحماية من الإغلاق بالخلفية", color = PrimaryTeal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
 
-            // الخطوة 1
+            // الخطوة 1 (بسيطة ومستقرة)
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBg),
@@ -142,54 +119,29 @@ fun HomeScreen(
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text("الخطوة الأولى (1)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("قم بتشغيل نقطة الاتصال في جهازك لتتمكن الأجهزة الأخرى من الاتصال بك.", color = TextGray, fontSize = 15.sp)
+                    Text("انقر أدناه لفتح الإعدادات، ثم قم بتفعيل (نقطة الاتصال) في جهازك وارجع للتطبيق.", color = TextGray, fontSize = 15.sp)
                     Spacer(modifier = Modifier.height(20.dp))
                     
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    Button(
+                        onClick = {
+                            try {
+                                val intent = Intent(Intent.ACTION_MAIN, null)
+                                intent.addCategory(Intent.CATEGORY_LAUNCHER)
+                                intent.component = android.content.ComponentName("com.android.settings", "com.android.settings.TetherSettings")
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                val fallbackIntent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                                fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(fallbackIntent)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(55.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Button(
-                            onClick = {
-                                // تجميع كل الصلاحيات المطلوبة وإطلاقها دفعة واحدة
-                                val perms = mutableListOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    Manifest.permission.CHANGE_WIFI_STATE
-                                )
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    perms.add(Manifest.permission.NEARBY_WIFI_DEVICES)
-                                }
-                                permissionsLauncher.launch(perms.toTypedArray())
-                            },
-                            modifier = Modifier.weight(1f).height(55.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text("تشغيل (مباشر)", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = {
-                                try {
-                                    val intent = Intent(Intent.ACTION_MAIN, null)
-                                    intent.addCategory(Intent.CATEGORY_LAUNCHER)
-                                    intent.component = android.content.ComponentName("com.android.settings", "com.android.settings.TetherSettings")
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    val fallbackIntent = Intent(android.provider.Settings.ACTION_WIRELESS_SETTINGS)
-                                    fallbackIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(fallbackIntent)
-                                }
-                            },
-                            modifier = Modifier.size(55.dp),
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.Settings, contentDescription = "الإعدادات", tint = PrimaryTeal, modifier = Modifier.size(28.dp))
-                        }
+                        Icon(imageVector = Icons.Default.Settings, contentDescription = "الإعدادات", tint = Color.White, modifier = Modifier.size(24.dp).padding(end = 8.dp))
+                        Text("فتح إعدادات نقطة الاتصال", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -220,7 +172,7 @@ fun HomeScreen(
                 }
             }
 
-            // الخطوة 3
+            // الخطوة 3 (نسخ الأيبيات)
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBg),
@@ -229,8 +181,7 @@ fun HomeScreen(
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text("الخطوة الثالثة (3)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text("في الجهاز الآخر، اختر (تفويض يدوي) وأدخل أحد هذه العناوين:", color = Color.White, fontSize = 15.sp)
+                    Text("في إعدادات واي فاي الجهاز الآخر، اختر (تفويض يدوي) وانسخ البيانات التالية:", color = Color.White, fontSize = 15.sp)
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     if (isRunning && uiState.availableIPs.isNotEmpty()) {
@@ -261,7 +212,7 @@ fun HomeScreen(
                     } else {
                         Card(colors = CardDefaults.cardColors(containerColor = Color.Black), modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("انتظر بدء البث لظهور العناوين...", color = TextGray, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text("انتظر بدء البث لظهور قائمة العناوين...", color = TextGray, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             }
                         }
                     }
