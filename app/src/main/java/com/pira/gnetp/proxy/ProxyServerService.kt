@@ -420,7 +420,7 @@ class ProxyServerService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("بث الإنترنت (VPN)")
             .setContentText("الخدمة تعمل بقوة في الخلفية 🚀")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(android.R.drawable.ic_secure)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .build()
