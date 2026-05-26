@@ -60,22 +60,38 @@ fun HomeScreen(
     
     val isRunning = uiState.isHttpProxyActive || uiState.isSocks5ProxyActive
     
-    // دالة طلب صلاحية الموقع للهوتسبوت
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
+    // مشغل الصلاحيات المتعددة للهوتسبوت المباشر
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all { it.value }
+        if (granted) {
+            // التحقق من تشغيل الـ GPS فعلياً في الجهاز
+            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as android.location.LocationManager
+            if (!locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(context, "الرجاء تشغيل الـ GPS (الموقع) من الستارة العلوية أولاً!", Toast.LENGTH_LONG).show()
+                return@rememberLauncherForActivityResult
+            }
+            
             try {
                 val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    wifiManager.startLocalOnlyHotspot(null, null)
-                    Toast.makeText(context, "تم تشغيل نقطة الاتصال!", Toast.LENGTH_SHORT).show()
+                    wifiManager.startLocalOnlyHotspot(object : WifiManager.LocalOnlyHotspotCallback() {
+                        override fun onStarted(reservation: WifiManager.LocalOnlyHotspotReservation?) {
+                            super.onStarted(reservation)
+                            Toast.makeText(context, "تم تشغيل نقطة الاتصال المباشرة بنجاح!", Toast.LENGTH_SHORT).show()
+                        }
+                        override fun onFailed(reason: Int) {
+                            super.onFailed(reason)
+                            Toast.makeText(context, "فشل التشغيل المباشر، استخدم زر الإعدادات.", Toast.LENGTH_LONG).show()
+                        }
+                    }, null)
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "استخدم زر الإعدادات اليدوي", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "حدث خطأ بالصلاحيات، استخدم زر الإعدادات", Toast.LENGTH_SHORT).show()
             }
         } else {
-            Toast.makeText(context, "يجب إعطاء صلاحية الموقع لتشغيل الهوتسبوت برمجياً", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "يجب إعطاء جميع الصلاحيات ليعمل الزر المباشر", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -97,7 +113,7 @@ fun HomeScreen(
                 modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)
             )
 
-            // زر حماية التطبيق من الإغلاق بالخلفية
+            // زر حماية التطبيق من الإغلاق
             Button(
                 onClick = {
                     val intent = Intent()
@@ -135,7 +151,16 @@ fun HomeScreen(
                     ) {
                         Button(
                             onClick = {
-                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                                // تجميع كل الصلاحيات المطلوبة وإطلاقها دفعة واحدة
+                                val perms = mutableListOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                                    Manifest.permission.CHANGE_WIFI_STATE
+                                )
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    perms.add(Manifest.permission.NEARBY_WIFI_DEVICES)
+                                }
+                                permissionsLauncher.launch(perms.toTypedArray())
                             },
                             modifier = Modifier.weight(1f).height(55.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal),
@@ -195,7 +220,7 @@ fun HomeScreen(
                 }
             }
 
-            // الخطوة 3 (الأيبيات والنسخ)
+            // الخطوة 3
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBg),
