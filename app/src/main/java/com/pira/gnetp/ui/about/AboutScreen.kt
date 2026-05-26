@@ -107,7 +107,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "GNet Proxy is a lightweight proxy application that allows you to share your internet connection with other devices through a secure proxy tunnel. It supports both HTTP and SOCKS5 proxy protocols.",
+                text = "تطبيق Exhxx VPN هو أداتك الاحترافية لبث ومشاركة اتصال الإنترنت المشفر للأجهزة الأخرى بأمان وسهولة.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 16.dp)

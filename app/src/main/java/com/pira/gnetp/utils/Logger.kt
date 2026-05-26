@@ -3,7 +3,7 @@ package com.pira.gnetp.utils
 import android.util.Log
 
 object Logger {
-    private const val TAG = "GNet"
+    private const val TAG = "ExhxxVPN"
     
     fun d(tag: String, message: String) {
         Log.d("$TAG:$tag", message)
