@@ -41,7 +41,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             val keystorePropertiesFile = rootProject.file("key.properties")
