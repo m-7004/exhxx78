@@ -135,7 +135,7 @@ fun AboutScreen(
             
             OutlinedButton(
                 onClick = {
-                    val uri = Uri.parse("https://github.com/code3-dev/GNet")
+                    val uri = Uri.parse("https://t.me/exhxx78")
                     val intent = Intent(Intent.ACTION_VIEW, uri)
                     context.startActivity(intent)
                 },
@@ -148,7 +148,7 @@ fun AboutScreen(
             
             OutlinedButton(
                 onClick = {
-                    val uri = Uri.parse("https://github.com/code3-dev/GNet/releases/latest")
+                    val uri = Uri.parse("https://t.me/exhxx78/releases/latest")
                     val intent = Intent(Intent.ACTION_VIEW, uri)
                     context.startActivity(intent)
                 },

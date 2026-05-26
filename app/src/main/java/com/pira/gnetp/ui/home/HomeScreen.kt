@@ -1,6 +1,5 @@
 package com.pira.gnetp.ui.home
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -202,7 +201,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(90.dp))
             }
 
-            // نافذة التعليمات الفخمة والمنسقة 100%
+            // نافذة التعليمات وشرح النافذة العائمة
             if (showInfoDialog) {
                 Dialog(
                     onDismissRequest = { showInfoDialog = false },
@@ -228,20 +227,28 @@ fun HomeScreen(
                                 textAlign = TextAlign.Center
                             )
                             
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
                             
-                            Text(text = "١. افتح إعدادات نقطة الاتصال عبر التطبيق وقم بتشغيلها.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
-                            Text(text = "٢. عد إلى التطبيق واضغط على (بدء البث).", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
-                            Text(text = "٣. في الجهاز المستقبل، اتصل بشبكتك، ثم ادخل إعدادات تلك الشبكة.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
-                            Text(text = "٤. غيّر إعداد التفويض (Proxy) إلى وضع (يدوي).", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
-                            Text(text = "٥. انسخ عنوان الخادم (الآيبي) والمنفذ (8080) من التطبيق والصقهما هناك.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 16.dp))
+                            // شرح ميزة النافذة العائمة للمستخدم
+                            Text(text = "🌟 ميزة البث المستمر:", color = PrimaryTeal, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "لضمان بقاء البث نشطاً، لا تغلق التطبيق بالكامل. فقط اضغط على زر (الرئيسية / Home) في هاتفك.", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "سيتحول التطبيق تلقائياً إلى نافذة مربعة عائمة (مثل فيديو اليوتيوب). يمكنك سحبها وإخفائها في حافة الشاشة لتصفح جهازك براحة تامة!", color = TextGray, fontSize = 13.sp, modifier = Modifier.padding(bottom = 16.dp))
+                            
+                            Divider(color = Color.DarkGray, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(text = "طريقة الربط:", color = PrimaryTeal, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(text = "١. افتح نقطة الاتصال عبر التطبيق وقم بتشغيلها.", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "٢. عد إلى هنا واضغط على (بدء البث).", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "٣. في الجهاز المستقبل، اتصل بشبكتك، ادخل الإعدادات واختر تفويض (يدوي).", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "٤. انسخ الآيبي والمنفذ والصقهما هناك.", color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(bottom = 16.dp))
                             
                             Divider(color = Color.DarkGray, thickness = 1.dp)
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             // حقوق المطور
-                            Text(text = "المطور: حيدر عادل (exhxx)", color = PrimaryTeal, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
-                            Text(text = "الإصدار: 1.0.0", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 24.dp))
+                            Text(text = "المطور: Developer Mohamed Adnan (@m_7004)", color = PrimaryTeal, fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "الإصدار: 1.0.0 (الإصدار الأول)", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 20.dp))
                             
                             Button(
                                 onClick = {
