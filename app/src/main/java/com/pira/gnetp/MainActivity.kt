@@ -115,7 +115,7 @@ fun MainNavHost(
         topBar = {},
         bottomBar = {
             if (!shouldHideBottomBar) {
-                BottomNavigationBar(navController)
+                // BottomNavigationBar(navController) -- محذوف
             }
         }
     ) { innerPadding ->
