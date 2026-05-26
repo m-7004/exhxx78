@@ -4,12 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
-import android.os.PowerManager
 import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -25,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -34,6 +31,8 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 private val DarkBg = Color(0xFF121212)
 private val CardBg = Color(0xFF1E1E1E)
@@ -58,22 +57,7 @@ fun HomeScreen(
     
     val isRunning = uiState.isHttpProxyActive || uiState.isSocks5ProxyActive
     
-    // حالة للتحكم في ظهور نافذة التعليمات
     var showInfoDialog by remember { mutableStateOf(false) }
-
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (!isGranted) {
-            Toast.makeText(context, "يجب تفعيل الإشعارات لضمان عدم انقطاع البث بالخلفية!", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         Box(modifier = Modifier.fillMaxSize().background(DarkBg)) {
@@ -85,47 +69,26 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 
-                // شريط العنوان العلوي مع زر (عن التطبيق) في أقصى اليسار
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 24.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Spacer(modifier = Modifier.size(48.dp)) // مساحة للموازنة
+                    Spacer(modifier = Modifier.size(48.dp))
                     Text(
                         text = "بث الإنترنت (VPN)",
                         color = Color.White,
-                        fontSize = 22.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
                     IconButton(onClick = { showInfoDialog = true }) {
                         Icon(
                             imageVector = Icons.Default.Info,
-                            contentDescription = "عن التطبيق",
+                            contentDescription = "دليل الاستخدام",
                             tint = Color.White,
-                            modifier = Modifier.size(28.dp)
+                            modifier = Modifier.size(30.dp)
                         )
                     }
-                }
-
-                // زر الحماية من إغلاق البطارية
-                Button(
-                    onClick = {
-                        val intent = Intent()
-                        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-                        if (!pm.isIgnoringBatteryOptimizations(context.packageName)) {
-                            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                            intent.data = Uri.parse("package:${context.packageName}")
-                            context.startActivity(intent)
-                        } else {
-                            Toast.makeText(context, "التطبيق محمي من الإغلاق المؤقت ✅", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp).height(45.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("🛡️ تفعيل الحماية من الإغلاق بالخلفية", color = PrimaryTeal, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // الخطوة 1
@@ -135,9 +98,9 @@ fun HomeScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("الخطوة الأولى (1)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("الخطوة الأولى (١)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("انقر أدناه لفتح الإعدادات، ثم قم بتفعيل (نقطة الاتصال) في جهازك وارجع للتطبيق.", color = TextGray, fontSize = 15.sp)
+                        Text("افتح الإعدادات من الزر أدناه، قم بتشغيل (نقطة الاتصال) في جهازك، ثم عُد إلى هنا.", color = TextGray, fontSize = 15.sp)
                         Spacer(modifier = Modifier.height(20.dp))
                         
                         Button(
@@ -171,7 +134,7 @@ fun HomeScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("الخطوة الثانية (2)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("الخطوة الثانية (٢)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Spacer(modifier = Modifier.height(20.dp))
                         
                         Button(
@@ -197,7 +160,7 @@ fun HomeScreen(
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text("الخطوة الثالثة (3)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("الخطوة الثالثة (٣)", color = PrimaryTeal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         Spacer(modifier = Modifier.height(16.dp))
                         Text("في إعدادات واي فاي الجهاز الآخر، اختر (تفويض يدوي) وانسخ البيانات التالية:", color = Color.White, fontSize = 15.sp)
                         Spacer(modifier = Modifier.height(16.dp))
@@ -239,48 +202,70 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(90.dp))
             }
 
-            // نافذة (عن التطبيق)
+            // نافذة التعليمات الفخمة والمنسقة 100%
             if (showInfoDialog) {
-                AlertDialog(
+                Dialog(
                     onDismissRequest = { showInfoDialog = false },
-                    containerColor = CardBg,
-                    title = {
-                        Text(text = "عن التطبيق والتعليمات", color = PrimaryTeal, fontWeight = FontWeight.Bold)
-                    },
-                    text = {
-                        Column {
-                            Text("هذا التطبيق مخصص لبث اتصال الـ VPN أو الإنترنت المشفر للأجهزة الأخرى بسهولة عبر نقطة الاتصال.", color = Color.White, fontSize = 14.sp)
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text("طريقة الاستخدام:", color = PrimaryTeal, fontWeight = FontWeight.Bold)
-                            Text("1. قم بتشغيل نقطة الاتصال (Hotspot) من الخطوة الأولى.", color = TextGray, fontSize = 13.sp)
-                            Text("2. اضغط (بدء البث) من الخطوة الثانية.", color = TextGray, fontSize = 13.sp)
-                            Text("3. اتصل بشبكتك من الجهاز الآخر، ثم اذهب لإعدادات الشبكة المتصل بها وضع الإعدادات على (يدوي) وأدخل الآيبي والمنفذ.", color = TextGray, fontSize = 13.sp)
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Divider(color = Color.DarkGray)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            
-                            Text("الإصدار: 1.0.4", color = TextGray, fontSize = 12.sp)
-                            Text("التطوير: Developer Mohamed Adnan (m_7004)", color = PrimaryTeal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/exhxx78"))
-                                context.startActivity(intent)
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0088CC))
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .wrapContentHeight(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = CardBg)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(24.dp),
+                            horizontalAlignment = Alignment.Start
                         ) {
-                            Text("قناتنا على تليجرام", color = Color.White)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showInfoDialog = false }) {
-                            Text("إغلاق", color = TextGray)
+                            Text(
+                                text = "دليل الاستخدام الشامل",
+                                color = PrimaryTeal,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                            
+                            Spacer(modifier = Modifier.height(24.dp))
+                            
+                            Text(text = "١. افتح إعدادات نقطة الاتصال عبر التطبيق وقم بتشغيلها.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(text = "٢. عد إلى التطبيق واضغط على (بدء البث).", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(text = "٣. في الجهاز المستقبل، اتصل بشبكتك، ثم ادخل إعدادات تلك الشبكة.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(text = "٤. غيّر إعداد التفويض (Proxy) إلى وضع (يدوي).", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 8.dp))
+                            Text(text = "٥. انسخ عنوان الخادم (الآيبي) والمنفذ (8080) من التطبيق والصقهما هناك.", color = Color.White, fontSize = 15.sp, modifier = Modifier.padding(bottom = 16.dp))
+                            
+                            Divider(color = Color.DarkGray, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // حقوق المطور
+                            Text(text = "المطور: حيدر عادل (exhxx)", color = PrimaryTeal, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 4.dp))
+                            Text(text = "الإصدار: 1.0.0", color = TextGray, fontSize = 14.sp, modifier = Modifier.padding(bottom = 24.dp))
+                            
+                            Button(
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/exhxx78"))
+                                    context.startActivity(intent)
+                                },
+                                modifier = Modifier.fillMaxWidth().height(50.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0088CC)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("قناة التيليجرام الرسمية", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            }
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            TextButton(
+                                onClick = { showInfoDialog = false },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("إغلاق", color = TextGray, fontSize = 16.sp)
+                            }
                         }
                     }
-                )
+                }
             }
         }
     }

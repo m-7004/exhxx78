@@ -258,4 +258,11 @@ fun MainPreview() {
     GNetTheme(themeSettings = themeSettings) {
         MainApp(logRepository = LogRepository())
     }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            enterPictureInPictureMode(android.app.PictureInPictureParams.Builder().build())
+        }
+    }
 }
