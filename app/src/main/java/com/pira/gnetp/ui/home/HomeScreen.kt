@@ -103,7 +103,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .scale(pulseScale)
                             .clickable {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/exhxx78"))
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(String(android.util.Base64.decode("aHR0cHM6Ly90Lm1lL2V4aHh4Nzg=", android.util.Base64.DEFAULT))))
                                 context.startActivity(intent)
                             }
                             .background(CardBg, RoundedCornerShape(12.dp))
@@ -305,7 +305,7 @@ fun HomeScreen(
                             
                             Button(
                                 onClick = {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/exhxx78"))
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(String(android.util.Base64.decode("aHR0cHM6Ly90Lm1lL2V4aHh4Nzg=", android.util.Base64.DEFAULT))))
                                     context.startActivity(intent)
                                 },
                                 modifier = Modifier.fillMaxWidth().height(50.dp),

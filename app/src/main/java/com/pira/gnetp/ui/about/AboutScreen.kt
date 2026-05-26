@@ -135,7 +135,7 @@ fun AboutScreen(
             
             OutlinedButton(
                 onClick = {
-                    val uri = Uri.parse("https://t.me/exhxx78")
+                    val uri = Uri.parse(String(android.util.Base64.decode("aHR0cHM6Ly90Lm1lL2V4aHh4Nzg=", android.util.Base64.DEFAULT)))
                     val intent = Intent(Intent.ACTION_VIEW, uri)
                     context.startActivity(intent)
                 },
